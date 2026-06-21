@@ -31,13 +31,14 @@ body {
     height: 100%;
     padding: 40px 20px;
     animation: fadeIn 0.3s ease-in;
-    overflow-y: auto;
+    overflow: hidden;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .screen.active {
     display: flex;
-    justify-content: center;
 }
 
 @keyframes fadeIn {
@@ -73,6 +74,7 @@ body {
     text-align: center;
     background: linear-gradient(135deg, #FFD89B 0%, #19547B 100%);
     color: #333;
+    overflow-y: auto;
 }
 
 #town-screen h2 {
@@ -176,6 +178,7 @@ body {
 /* キャラクター選択 */
 #character-select-screen {
     text-align: center;
+    overflow-y: auto;
 }
 
 #character-select-screen h2 {
@@ -242,6 +245,7 @@ body {
 #main-screen {
     padding: 15px 20px;
     overflow-y: auto;
+    justify-content: flex-start;
 }
 
 #main-screen h2 {
