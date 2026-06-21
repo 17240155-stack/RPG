@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stick Figure RPG - Miitopia Style</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- タイトル画面 -->
+        <div id="title-screen" class="screen active">
+            <div class="title-content">
+                <h1>🎮 Stick Figure RPG</h1>
+                <p>Miitopia Style Adventure</p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="startNewGame()">新しくはじめる</button>
+                    <button class="btn btn-secondary" onclick="loadGame()">セーブデータを読み込む</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- キャラクター選択画面 -->
+        <div id="character-select-screen" class="screen">
+            <h2>パーティーを作成しよう</h2>
+            <p id="char-select-info">キャラクター1/4を選択</p>
+            <div id="character-grid" class="character-grid"></div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="goToTitle()">戻る</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextCharacter()" style="display:none;">次へ</button>
+            </div>
+        </div>
+
+        <!-- 名前入力画面 -->
+        <div id="name-input-screen" class="screen">
+            <h2 id="name-input-title">キャラクター1の名前を入力</h2>
+            <div id="character-preview" class="character-preview"></div>
+            <input type="text" id="name-input" class="name-input" placeholder="名前を入力" maxlength="10">
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="backToCharacterSelect()">戻る</button>
+                <button class="btn btn-primary" onclick="confirmCharacterName()">決定</button>
+            </div>
+        </div>
+
+        <!-- メイン画面 -->
+        <div id="main-screen" class="screen">
+            <div class="game-content">
+                <h2 id="dungeon-title">ダンジョン: 森</h2>
+                <div class="dungeon-info">
+                    <p id="floor-info">フロア: 1/5</p>
+                    <p id="enemy-info">敵の数: 3</p>
+                </div>
+                
+                <!-- 戦闘画面 -->
+                <div id="battle-screen" class="battle-container">
+                    <div class="enemy-side">
+                        <h3>敵</h3>
+                        <div id="enemy-list" class="enemy-list"></div>
+                    </div>
+
+                    <div class="vs-line">VS</div>
+
+                    <div class="party-side">
+                        <h3>パーティー</h3>
+                        <div id="party-list" class="party-list"></div>
+                    </div>
+                </div>
+
+                <!-- 戦闘ログ -->
+                <div id="battle-log" class="battle-log">
+                    <p>戦闘開始！</p>
+                </div>
+
+                <!-- 戦闘コマンド -->
+                <div id="battle-commands" class="battle-commands">
+                    <button class="btn btn-battle" onclick="attackEnemy()">攻撃</button>
+                    <button class="btn btn-battle" onclick="useSkill()">スキル</button>
+                    <button class="btn btn-battle" onclick="useItem()">アイテム</button>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary" onclick="pauseGame()">ポーズ</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ポーズ画面 -->
+        <div id="pause-screen" class="screen">
+            <div class="pause-menu">
+                <h2>ポーズ中</h2>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="resumeGame()">再開</button>
+                    <button class="btn btn-secondary" onclick="saveGame()">セーブ</button>
+                    <button class="btn btn-secondary" onclick="goToTitle()">タイトルに戻る</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ゲームオーバー画面 -->
+        <div id="gameover-screen" class="screen">
+            <div class="gameover-content">
+                <h2 id="gameover-title">ゲームオーバー</h2>
+                <p id="gameover-message">全滅してしまった...</p>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="startNewGame()">もう一度</button>
+                    <button class="btn btn-secondary" onclick="goToTitle()">タイトルに戻る</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- クリア画面 -->
+        <div id="clear-screen" class="screen">
+            <div class="clear-content">
+                <h2>ダンジョンクリア！</h2>
+                <p id="clear-message">敵を全て倒した！</p>
+                <div id="reward-info"></div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="nextDungeon()">次のダンジョンへ</button>
+                    <button class="btn btn-secondary" onclick="goToTitle()">タイトルに戻る</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
