@@ -20,25 +20,33 @@
             </div>
         </div>
 
-        <!-- キャラクター選択画面 -->
-        <div id="character-select-screen" class="screen">
-            <h2>パーティーを作成しよう</h2>
-            <p id="char-select-info">キャラクター1/4を選択</p>
-            <div id="character-grid" class="character-grid"></div>
+        <!-- 始まりの街画面 -->
+        <div id="town-screen" class="screen">
+            <h2>🏘️ 始まりの街</h2>
+            <p id="town-message">仲間を集めてダンジョンに出かけよう！</p>
+            
+            <!-- キャラクター選択グリッド -->
+            <div id="town-character-grid" class="character-grid"></div>
+            
+            <!-- 選択したキャラクター表示 -->
+            <div id="selected-party" class="selected-party">
+                <h3>選択した仲間</h3>
+                <div id="selected-party-list"></div>
+            </div>
+            
             <div class="button-group">
-                <button class="btn btn-secondary" onclick="goToTitle()">戻る</button>
-                <button class="btn btn-primary" id="next-btn" onclick="nextCharacter()" style="display:none;">次へ</button>
+                <button class="btn btn-secondary" id="go-dungeon-btn" onclick="goDungeon()" style="display:none;">ダンジョンへ出発！</button>
             </div>
         </div>
 
-        <!-- 名前入力画面 -->
-        <div id="name-input-screen" class="screen">
-            <h2 id="name-input-title">キャラクター1の名前を入力</h2>
-            <div id="character-preview" class="character-preview"></div>
-            <input type="text" id="name-input" class="name-input" placeholder="名前を入力" maxlength="10">
+        <!-- キャラクター選択画面 -->
+        <div id="character-select-screen" class="screen">
+            <h2>仲間を選ぼう</h2>
+            <p id="char-select-info">仲間1/4を選択</p>
+            <div id="character-grid" class="character-grid"></div>
             <div class="button-group">
-                <button class="btn btn-secondary" onclick="backToCharacterSelect()">戻る</button>
-                <button class="btn btn-primary" onclick="confirmCharacterName()">決定</button>
+                <button class="btn btn-secondary" onclick="backToTown()">戻る</button>
+                <button class="btn btn-primary" id="next-btn" onclick="nextCharacter()" style="display:none;">次へ</button>
             </div>
         </div>
 
