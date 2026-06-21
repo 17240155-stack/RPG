@@ -34,6 +34,14 @@ const JOBS = {
     }
 };
 
+const DUNGEONS = [
+    { name: '森', emoji: '🌲' },
+    { name: 'しぐれの塔', emoji: '🗼' },
+    { name: '炎の城', emoji: '🔥' },
+    { name: '氷の洞窟', emoji: '❄️' },
+    { name: '暗黒の遺跡', emoji: '🏚️' }
+];
+
 let gameState = {
     currentScreen: 'title',
     party: [],
@@ -91,7 +99,7 @@ function startNewGame() {
     gameState.currentCharacterIndex = 0;
     gameState.dungeonLevel = 0;
     gameState.floor = 1;
-    showCharacterSelection();
+    showTown();
 }
 
 function loadGame() {
@@ -105,13 +113,15 @@ function loadGame() {
     }
 }
 
-function showCharacterSelection() {
-    displayCharacterOptions();
-    showScreen('character-select-screen');
+function showTown() {
+    gameState.currentCharacterIndex = 0;
+    displayTownScreen();
+    showScreen('town-screen');
 }
 
-function displayCharacterOptions() {
-    const grid = document.getElementById('character-grid');
+function displayTownScreen() {
+    // 色のグリッドを表示
+    const grid = document.getElementById('town-character-grid');
     grid.innerHTML = '';
 
     const colorEntries = Object.entries(COLORS);
@@ -123,80 +133,54 @@ function displayCharacterOptions() {
             <div class="stick-figure">${color.emoji}</div>
             <h3>${color.name}</h3>
             <p>${color.trait}</p>
-            <small>職業を選ぶ</small>
         `;
-        card.onclick = () => selectColor(color);
+        card.onclick = () => selectColorInTown(color);
         grid.appendChild(card);
     });
 
-    updateCharacterSelectInfo();
+    updateTownScreen();
 }
 
-function selectColor(color) {
+function selectColorInTown(color) {
     const jobEntries = Object.entries(JOBS);
     
-    Swal.fire({
-        title: `${color.name}色の職業を選ぶ`,
-        html: jobEntries.map(([key, job]) => 
-            `<button class="job-option" onclick="selectJob('${color.name}', '${job.name}')">${job.name}</button>`
-        ).join(''),
-        didOpen: () => {
-            document.querySelectorAll('.job-option').forEach(btn => {
-                btn.style.cssText = `
-                    padding: 10px 20px;
-                    margin: 5px;
-                    background: #667eea;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                `;
-            });
-        },
-        showConfirmButton: false
-    });
+    // Simple job selection dialog
+    let jobHtml = jobEntries.map(([key, job]) => 
+        `<button class="job-select-btn" onclick="selectJobInTown('${color.name}', '${job.name}')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">${job.name}</button>`
+    ).join('');
+    
+    // Create modal-like display
+    const modal = document.createElement('div');
+    modal.id = 'job-selection-modal';
+    modal.innerHTML = `
+        <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+            <div style="background: white; padding: 30px; border-radius: 15px; text-align: center; max-width: 300px;">
+                <h3 style="color: #333; margin-bottom: 20px;">${color.name}色の職業を選ぶ</h3>
+                <div id="job-buttons">${jobHtml}</div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
 }
 
-function selectJob(color, job) {
-    showNameInputScreen(color, job);
-    Swal.close();
-}
-
-function showNameInputScreen(color, job) {
+function selectJobInTown(color, job) {
+    const modal = document.getElementById('job-selection-modal');
+    if (modal) modal.remove();
+    
     const colorObj = Object.values(COLORS).find(c => c.name === color);
-    gameState.selectedColor = color;
-    gameState.selectedJob = job;
-
-    document.getElementById('name-input-title').textContent = 
-        `キャラクター${gameState.currentCharacterIndex + 1}の名前を入力`;
-    document.getElementById('character-preview').textContent = colorObj.emoji;
-    document.getElementById('name-input').value = '';
-    document.getElementById('name-input').focus();
-
-    showScreen('name-input-screen');
-}
-
-function confirmCharacterName() {
-    const name = document.getElementById('name-input').value.trim();
-    if (!name) {
-        alert('名前を入力してください');
-        return;
-    }
-
-    const colorObj = Object.values(COLORS).find(c => c.name === gameState.selectedColor);
-    const job = Object.values(JOBS).find(j => j.name === gameState.selectedJob);
-    const modifier = getColorModifier(gameState.selectedColor);
+    const jobObj = Object.values(JOBS).find(j => j.name === job);
+    const modifier = getColorModifier(color);
 
     const character = {
-        name: name,
-        color: gameState.selectedColor,
-        job: gameState.selectedJob,
+        name: `${colorObj.emoji}${job}`,
+        color: color,
+        job: job,
         emoji: colorObj.emoji,
-        maxHP: Math.floor(job.baseHP * modifier.hp),
-        hp: Math.floor(job.baseHP * modifier.hp),
-        atk: Math.floor(job.baseATK * modifier.atk),
-        def: Math.floor(job.baseDEF * modifier.def),
-        skills: job.skills,
+        maxHP: Math.floor(jobObj.baseHP * modifier.hp),
+        hp: Math.floor(jobObj.baseHP * modifier.hp),
+        atk: Math.floor(jobObj.baseATK * modifier.atk),
+        def: Math.floor(jobObj.baseDEF * modifier.def),
+        skills: jobObj.skills,
         level: 1,
         exp: 0
     };
@@ -205,43 +189,48 @@ function confirmCharacterName() {
     gameState.currentCharacterIndex++;
 
     if (gameState.currentCharacterIndex < 4) {
-        updateCharacterSelectInfo();
-        showCharacterSelection();
+        updateTownScreen();
+        displayTownScreen();
     } else {
-        startGame();
+        goDungeon();
     }
 }
 
-function backToCharacterSelect() {
-    showCharacterSelection();
+function backToTown() {
+    showTown();
 }
 
-function nextCharacter() {
-    if (gameState.currentCharacterIndex < 4) {
-        updateCharacterSelectInfo();
-        showCharacterSelection();
-    }
-}
-
-function updateCharacterSelectInfo() {
-    const info = document.getElementById('char-select-info');
-    info.textContent = `キャラクター${gameState.currentCharacterIndex + 1}/4を選択`;
+function updateTownScreen() {
+    const info = document.getElementById('town-message');
+    info.textContent = `仲間を集めてダンジョンに出かけよう！（${gameState.currentCharacterIndex}/4）`;
     
-    const nextBtn = document.getElementById('next-btn');
+    // 選択したパーティーを表示
+    const partyList = document.getElementById('selected-party-list');
+    partyList.innerHTML = gameState.party.map((char, idx) => `
+        <div class="party-member-badge">
+            <span>${char.emoji}</span>
+            <span>${char.job}</span>
+        </div>
+    `).join('');
+
+    // ダンジョンへ出発ボタンの表示/非表示
+    const btn = document.getElementById('go-dungeon-btn');
     if (gameState.currentCharacterIndex >= 4) {
-        nextBtn.style.display = 'block';
+        btn.style.display = 'block';
+    } else {
+        btn.style.display = 'none';
     }
+}
+
+function goDungeon() {
+    gameState.dungeonLevel = 0;
+    gameState.floor = 1;
+    startBattle();
 }
 
 // ========================================
 // ゲーム開始
 // ========================================
-
-function startGame() {
-    gameState.dungeonLevel = 0;
-    gameState.floor = 1;
-    startBattle();
-}
 
 function startBattle() {
     // パーティーのHPをリセット
@@ -259,8 +248,9 @@ function startBattle() {
 }
 
 function generateEnemies() {
-    const dungeonNames = ['森', 'しぐれの塔', '炎の城', '氷の洞窟', '暗黒の遺跡'];
-    gameState.enemyDungeonName = dungeonNames[gameState.dungeonLevel] || '謎の地';
+    const dungeonData = DUNGEONS[gameState.dungeonLevel] || DUNGEONS[0];
+    gameState.enemyDungeonName = dungeonData.name;
+    gameState.enemyDungeonEmoji = dungeonData.emoji;
     
     const enemyCount = 2 + gameState.floor;
     gameState.enemies = [];
@@ -291,8 +281,8 @@ function generateEnemies() {
         gameState.enemies.push(enemy);
     }
 
-    document.getElementById('dungeon-title').textContent = `ダンジョン: ${gameState.enemyDungeonName}`;
-    document.getElementById('floor-info').textContent = `フロア: ${gameState.floor}/${5}`;
+    document.getElementById('dungeon-title').textContent = `${gameState.enemyDungeonEmoji} ${gameState.enemyDungeonName}`;
+    document.getElementById('floor-info').textContent = `フロア: ${gameState.floor}/5`;
     document.getElementById('enemy-info').textContent = `敵の数: ${gameState.enemies.length}`;
 }
 
@@ -310,7 +300,7 @@ function updateBattleUI() {
     const partyList = document.getElementById('party-list');
     partyList.innerHTML = gameState.party.map((char, idx) => `
         <div class="character-status">
-            <div class="status-name">${char.emoji} ${char.name}</div>
+            <div class="status-name">${char.emoji} ${char.job}</div>
             <div class="status-hp">HP: ${char.hp}/${char.maxHP}</div>
         </div>
     `).join('');
@@ -348,7 +338,7 @@ function attackEnemy() {
     const actualDamage = Math.max(1, damage - Math.floor(target.def / 2));
     
     target.hp = Math.max(0, target.hp - actualDamage);
-    addBattleLog(`${attacker.name}が${target.name}に${actualDamage}ダメージ！`);
+    addBattleLog(`${attacker.job}が${target.name}に${actualDamage}ダメージ！`);
 
     if (target.hp <= 0) {
         addBattleLog(`${target.name}は倒された！`);
@@ -378,10 +368,10 @@ function enemyTurn() {
     const actualDamage = Math.max(1, damage - Math.floor(target.def / 2));
 
     target.hp = Math.max(0, target.hp - actualDamage);
-    addBattleLog(`${attacker.name}が${target.name}に${actualDamage}ダメージを与えた！`);
+    addBattleLog(`${attacker.name}が${target.job}に${actualDamage}ダメージを与えた！`);
 
     if (target.hp <= 0) {
-        addBattleLog(`${target.name}は倒された...`);
+        addBattleLog(`${target.job}は倒された...`);
     }
 
     updateBattleUI();
@@ -470,9 +460,4 @@ function saveGame() {
 
 window.addEventListener('DOMContentLoaded', () => {
     showScreen('title-screen');
-    
-    // SweetAlert2ライブラリの読み込み
-    const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
-    document.head.appendChild(script);
 });
