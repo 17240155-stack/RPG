@@ -7,7 +7,8 @@ const COLORS = {
     BLUE: { name: '青', emoji: '🔵', trait: '堅守' },
     YELLOW: { name: '黄', emoji: '🟡', trait: '迅速' },
     GREEN: { name: '緑', emoji: '🟢', trait: '回復' },
-    PURPLE: { name: '紫', emoji: '🟣', trait: '神秘' }
+    PURPLE: { name: '紫', emoji: '🟣', trait: '神秘' },
+    WHITE: { name: '白', emoji: '🤍', trait: 'スライム' }
 };
 
 const JOBS = {
@@ -44,6 +45,7 @@ const DUNGEONS = [
 
 let gameState = {
     currentScreen: 'title',
+    protagonist: null,
     party: [],
     currentCharacterIndex: 0,
     enemies: [],
@@ -51,7 +53,8 @@ let gameState = {
     dungeonLevel: 0,
     floor: 1,
     isPaused: false,
-    battleLog: []
+    battleLog: [],
+    inSlimeBattle: false
 };
 
 // ========================================
@@ -79,7 +82,8 @@ function getColorModifier(color) {
         [COLORS.BLUE.name]: { hp: 1.0, atk: 0.9, def: 1.2 },     // DEF+
         [COLORS.YELLOW.name]: { hp: 0.9, atk: 1.1, def: 1.0 },   // ATK+, HP-
         [COLORS.GREEN.name]: { hp: 1.05, atk: 0.95, def: 1.05 }, // 回復特性
-        [COLORS.PURPLE.name]: { hp: 0.95, atk: 1.2, def: 0.9 }   // 魔法+
+        [COLORS.PURPLE.name]: { hp: 0.95, atk: 1.2, def: 0.9 },  // 魔法+
+        [COLORS.WHITE.name]: { hp: 1.0, atk: 1.0, def: 1.0 }     // スライム
     };
     return modifiers[color] || { hp: 1.0, atk: 1.0, def: 1.0 };
 }
@@ -89,17 +93,18 @@ function getColorModifier(color) {
 // ========================================
 
 function goToTitle() {
+    gameState.protagonist = null;
     gameState.party = [];
     gameState.currentCharacterIndex = 0;
     showScreen('title-screen');
 }
 
 function startNewGame() {
+    gameState.protagonist = null;
     gameState.party = [];
     gameState.currentCharacterIndex = 0;
-    gameState.dungeonLevel = 0;
-    gameState.floor = 1;
-    showTown();
+    gameState.inSlimeBattle = false;
+    showProtagonistSelection();
 }
 
 function loadGame() {
@@ -113,6 +118,94 @@ function loadGame() {
     }
 }
 
+// ========================================
+// 主人公選択
+// ========================================
+
+function showProtagonistSelection() {
+    displayProtagonistOptions();
+    showScreen('protagonist-screen');
+}
+
+function displayProtagonistOptions() {
+    const grid = document.getElementById('protagonist-grid');
+    grid.innerHTML = '';
+
+    const colorEntries = Object.entries(COLORS).filter(([key]) => key !== 'WHITE'); // WHITEは除外
+    
+    colorEntries.forEach(([key, color]) => {
+        const card = document.createElement('div');
+        card.className = 'character-card';
+        card.innerHTML = `
+            <div class="stick-figure">${color.emoji}</div>
+            <h3>${color.name}</h3>
+            <p>勇者</p>
+        `;
+        card.onclick = () => selectProtagonist(color);
+        grid.appendChild(card);
+    });
+}
+
+function selectProtagonist(color) {
+    const modifier = getColorModifier(color.name);
+    const job = JOBS.WARRIOR;
+
+    gameState.protagonist = {
+        name: `${color.emoji}勇者`,
+        color: color.name,
+        job: '勇者',
+        emoji: color.emoji,
+        maxHP: Math.floor(job.baseHP * modifier.hp),
+        hp: Math.floor(job.baseHP * modifier.hp),
+        atk: Math.floor(job.baseATK * modifier.atk),
+        def: Math.floor(job.baseDEF * modifier.def),
+        skills: job.skills,
+        level: 1,
+        exp: 0
+    };
+
+    gameState.party = [gameState.protagonist];
+    startSlimeBattle();
+}
+
+// ========================================
+// スライム戦闘
+// ========================================
+
+function startSlimeBattle() {
+    gameState.inSlimeBattle = true;
+    gameState.party[0].hp = gameState.party[0].maxHP;
+    
+    // 白いスライムを生成
+    const slimeJob = JOBS.MAGE;
+    const modifier = getColorModifier(COLORS.WHITE.name);
+    
+    gameState.enemies = [{
+        name: '🤍白いスライム',
+        color: 'WHITE',
+        job: 'スライム',
+        emoji: '🤍',
+        maxHP: 15,
+        hp: 15,
+        atk: 5,
+        def: 2,
+        exp: 50
+    }];
+
+    gameState.battleLog = [];
+    document.getElementById('dungeon-title').textContent = '🏘️ 始まりの街';
+    document.getElementById('floor-info').textContent = 'イベント戦闘';
+    document.getElementById('enemy-info').textContent = '敵: 白いスライム';
+
+    showScreen('main-screen');
+    updateBattleUI();
+    addBattleLog('白いスライムが現れた！');
+}
+
+// ========================================
+// 始まりの街（仲間選択）
+// ========================================
+
 function showTown() {
     gameState.currentCharacterIndex = 0;
     displayTownScreen();
@@ -120,11 +213,10 @@ function showTown() {
 }
 
 function displayTownScreen() {
-    // 色のグリッドを表示
     const grid = document.getElementById('town-character-grid');
     grid.innerHTML = '';
 
-    const colorEntries = Object.entries(COLORS);
+    const colorEntries = Object.entries(COLORS).filter(([key]) => key !== 'WHITE');
     
     colorEntries.forEach(([key, color]) => {
         const card = document.createElement('div');
@@ -134,22 +226,21 @@ function displayTownScreen() {
             <h3>${color.name}</h3>
             <p>${color.trait}</p>
         `;
-        card.onclick = () => selectColorInTown(color);
+        card.onclick = () => selectCompanion(color);
         grid.appendChild(card);
     });
 
     updateTownScreen();
 }
 
-function selectColorInTown(color) {
-    const jobEntries = Object.entries(JOBS);
+function selectCompanion(color) {
+    const jobKeys = Object.keys(JOBS);
     
-    // Simple job selection dialog
-    let jobHtml = jobEntries.map(([key, job]) => 
-        `<button class="job-select-btn" onclick="selectJobInTown('${color.name}', '${job.name}')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">${job.name}</button>`
-    ).join('');
+    let jobHtml = jobKeys.map(key => {
+        const job = JOBS[key];
+        return `<button class="job-select-btn" onclick="confirmCompanion('${color.name}', '${job.name}')" style="display: block; width: 100%; padding: 10px; margin: 5px 0; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em;">${job.name}</button>`;
+    }).join('');
     
-    // Create modal-like display
     const modal = document.createElement('div');
     modal.id = 'job-selection-modal';
     modal.innerHTML = `
@@ -163,7 +254,7 @@ function selectColorInTown(color) {
     document.body.appendChild(modal);
 }
 
-function selectJobInTown(color, job) {
+function confirmCompanion(color, job) {
     const modal = document.getElementById('job-selection-modal');
     if (modal) modal.remove();
     
@@ -188,7 +279,7 @@ function selectJobInTown(color, job) {
     gameState.party.push(character);
     gameState.currentCharacterIndex++;
 
-    if (gameState.currentCharacterIndex < 4) {
+    if (gameState.currentCharacterIndex < 3) {
         updateTownScreen();
         displayTownScreen();
     } else {
@@ -196,26 +287,23 @@ function selectJobInTown(color, job) {
     }
 }
 
-function backToTown() {
-    showTown();
-}
-
 function updateTownScreen() {
     const info = document.getElementById('town-message');
-    info.textContent = `仲間を集めてダンジョンに出かけよう！（${gameState.currentCharacterIndex}/4）`;
+    info.textContent = `仲間を集めてダンジョンに出かけよう！（${gameState.currentCharacterIndex}/3）`;
     
-    // 選択したパーティーを表示
     const partyList = document.getElementById('selected-party-list');
-    partyList.innerHTML = gameState.party.map((char, idx) => `
-        <div class="party-member-badge">
-            <span>${char.emoji}</span>
-            <span>${char.job}</span>
-        </div>
-    `).join('');
+    partyList.innerHTML = gameState.party.map((char, idx) => {
+        if (idx === 0) return ''; // 主人公は表示しない
+        return `
+            <div class="party-member-badge">
+                <span>${char.emoji}</span>
+                <span>${char.job}</span>
+            </div>
+        `;
+    }).join('');
 
-    // ダンジョンへ出発ボタンの表示/非表示
     const btn = document.getElementById('go-dungeon-btn');
-    if (gameState.currentCharacterIndex >= 4) {
+    if (gameState.currentCharacterIndex >= 3) {
         btn.style.display = 'block';
     } else {
         btn.style.display = 'none';
@@ -225,6 +313,7 @@ function updateTownScreen() {
 function goDungeon() {
     gameState.dungeonLevel = 0;
     gameState.floor = 1;
+    gameState.inSlimeBattle = false;
     startBattle();
 }
 
@@ -233,12 +322,10 @@ function goDungeon() {
 // ========================================
 
 function startBattle() {
-    // パーティーのHPをリセット
     gameState.party.forEach(char => {
         char.hp = char.maxHP;
     });
 
-    // 敵を生成
     generateEnemies();
     gameState.battleLog = [];
 
@@ -256,7 +343,7 @@ function generateEnemies() {
     gameState.enemies = [];
 
     for (let i = 0; i < enemyCount; i++) {
-        const colorKeys = Object.keys(COLORS);
+        const colorKeys = Object.keys(COLORS).filter(k => k !== 'WHITE');
         const randomColor = colorKeys[Math.floor(Math.random() * colorKeys.length)];
         const colorObj = COLORS[randomColor];
         
@@ -287,7 +374,6 @@ function generateEnemies() {
 }
 
 function updateBattleUI() {
-    // 敵の表示
     const enemyList = document.getElementById('enemy-list');
     enemyList.innerHTML = gameState.enemies.map((enemy, idx) => `
         <div class="enemy-status">
@@ -296,7 +382,6 @@ function updateBattleUI() {
         </div>
     `).join('');
 
-    // パーティーの表示
     const partyList = document.getElementById('party-list');
     partyList.innerHTML = gameState.party.map((char, idx) => `
         <div class="character-status">
@@ -313,18 +398,15 @@ function updateBattleUI() {
 function attackEnemy() {
     if (gameState.isPaused) return;
 
-    // プレイヤーターン
     let playerAlive = gameState.party.some(c => c.hp > 0);
     if (!playerAlive) {
         gameOver();
         return;
     }
 
-    // 生きている最初のキャラクターが攻撃
     const attacker = gameState.party.find(c => c.hp > 0);
     if (!attacker) return;
 
-    // 敵を選択（生きている敵から）
     const aliveEnemies = gameState.enemies.filter(e => e.hp > 0);
     if (aliveEnemies.length === 0) {
         clearDungeon();
@@ -333,7 +415,6 @@ function attackEnemy() {
 
     const target = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
     
-    // ダメージ計算
     const damage = Math.floor(attacker.atk + Math.random() * 5 - 2);
     const actualDamage = Math.max(1, damage - Math.floor(target.def / 2));
     
@@ -346,7 +427,6 @@ function attackEnemy() {
 
     updateBattleUI();
 
-    // 敵がまだいるなら、敵ターン
     if (gameState.enemies.some(e => e.hp > 0)) {
         setTimeout(enemyTurn, 1000);
     } else {
@@ -360,7 +440,6 @@ function enemyTurn() {
 
     if (aliveEnemies.length === 0 || aliveParty.length === 0) return;
 
-    // ランダムな敵が攻撃
     const attacker = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
     const target = aliveParty[Math.floor(Math.random() * aliveParty.length)];
 
@@ -376,7 +455,6 @@ function enemyTurn() {
 
     updateBattleUI();
 
-    // ゲームオーバーチェック
     if (gameState.party.every(c => c.hp <= 0)) {
         setTimeout(gameOver, 1500);
     }
@@ -391,15 +469,25 @@ function useItem() {
 }
 
 function clearDungeon() {
-    gameState.floor++;
-    if (gameState.floor > 5) {
-        completeDungeon();
-    } else {
-        addBattleLog('全ての敵を倒した！');
+    if (gameState.inSlimeBattle) {
+        addBattleLog('スライムを倒した！');
         setTimeout(() => {
-            document.getElementById('clear-message').textContent = `フロア${gameState.floor - 1}をクリアした！`;
-            showScreen('clear-screen');
-        }, 500);
+            addBattleLog('スライムは逃げていった...誰かが近づいてくる...');
+            setTimeout(() => {
+                showTown();
+            }, 1500);
+        }, 800);
+    } else {
+        gameState.floor++;
+        if (gameState.floor > 5) {
+            completeDungeon();
+        } else {
+            addBattleLog('全ての敵を倒した！');
+            setTimeout(() => {
+                document.getElementById('clear-message').textContent = `フロア${gameState.floor - 1}をクリアした！`;
+                showScreen('clear-screen');
+            }, 500);
+        }
     }
 }
 
