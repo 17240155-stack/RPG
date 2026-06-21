@@ -20,6 +20,16 @@
             </div>
         </div>
 
+        <!-- 主人公選択画面 -->
+        <div id="protagonist-screen" class="screen">
+            <h2>主人公を選ぼう</h2>
+            <p>勇者の色を選択してください</p>
+            <div id="protagonist-grid" class="character-grid"></div>
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="goToTitle()">戻る</button>
+            </div>
+        </div>
+
         <!-- 始まりの街画面 -->
         <div id="town-screen" class="screen">
             <h2>🏘️ 始まりの街</h2>
@@ -36,17 +46,6 @@
             
             <div class="button-group">
                 <button class="btn btn-secondary" id="go-dungeon-btn" onclick="goDungeon()" style="display:none;">ダンジョンへ出発！</button>
-            </div>
-        </div>
-
-        <!-- キャラクター選択画面 -->
-        <div id="character-select-screen" class="screen">
-            <h2>仲間を選ぼう</h2>
-            <p id="char-select-info">仲間1/4を選択</p>
-            <div id="character-grid" class="character-grid"></div>
-            <div class="button-group">
-                <button class="btn btn-secondary" onclick="backToTown()">戻る</button>
-                <button class="btn btn-primary" id="next-btn" onclick="nextCharacter()" style="display:none;">次へ</button>
             </div>
         </div>
 
