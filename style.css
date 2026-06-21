@@ -1,0 +1,448 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+}
+
+#game-container {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    height: 600px;
+    display: flex;
+}
+
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 40px 20px;
+    animation: fadeIn 0.3s ease-in;
+    overflow-y: auto;
+    flex-direction: column;
+}
+
+.screen.active {
+    display: flex;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* タイトル画面 */
+#title-screen {
+    text-align: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.title-content {
+    width: 100%;
+}
+
+.title-content h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.title-content p {
+    font-size: 1.2em;
+    margin-bottom: 40px;
+    opacity: 0.9;
+}
+
+/* 街画面 */
+#town-screen {
+    text-align: center;
+    background: linear-gradient(135deg, #FFD89B 0%, #19547B 100%);
+    color: #333;
+}
+
+#town-screen h2 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+#town-message {
+    color: #555;
+    margin-bottom: 20px;
+    font-size: 1em;
+}
+
+.selected-party {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.selected-party h3 {
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1em;
+}
+
+#selected-party-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.party-member-badge {
+    background: #667eea;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ボタン */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 15px 30px;
+    font-size: 1.1em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #f093fb;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #e07ae0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+}
+
+.btn-battle {
+    flex: 1;
+    padding: 12px;
+    font-size: 1em;
+    background: #4CAF50;
+    color: white;
+    border-radius: 8px;
+}
+
+.btn-battle:hover {
+    background: #45a049;
+}
+
+/* キャラクター選択 */
+#character-select-screen {
+    text-align: center;
+}
+
+#character-select-screen h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+#char-select-info {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.character-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.character-card {
+    padding: 15px;
+    border: 3px solid #ddd;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f9f9f9;
+}
+
+.character-card:hover {
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+}
+
+.character-card.selected {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.stick-figure {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.character-card h3 {
+    color: #333;
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.character-card p {
+    color: #666;
+    font-size: 0.85em;
+    margin: 5px 0;
+}
+
+.character-card small {
+    color: #999;
+    font-size: 0.8em;
+}
+
+/* メイン画面 */
+#main-screen {
+    padding: 15px 20px;
+    overflow-y: auto;
+}
+
+#main-screen h2 {
+    color: #333;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1.3em;
+}
+
+.dungeon-info {
+    background: #f0f4ff;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.dungeon-info p {
+    color: #666;
+    margin: 3px 0;
+    font-size: 0.9em;
+}
+
+/* 戦闘画面 */
+.battle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 10px;
+}
+
+.enemy-side, .party-side {
+    flex: 1;
+}
+
+.enemy-side h3, .party-side h3 {
+    color: #333;
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: 0.95em;
+}
+
+.vs-line {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #667eea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.enemy-list, .party-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.character-status, .enemy-status {
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 0.85em;
+    text-align: center;
+}
+
+.character-status {
+    background: #e8f5e9;
+    border-left: 4px solid #4CAF50;
+}
+
+.enemy-status {
+    background: #ffebee;
+    border-left: 4px solid #f44336;
+}
+
+.status-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9em;
+}
+
+.status-hp {
+    color: #666;
+    font-size: 0.8em;
+}
+
+/* 戦闘ログ */
+.battle-log {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 8px;
+    height: 80px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    font-size: 0.85em;
+}
+
+.battle-log p {
+    margin: 3px 0;
+    color: #333;
+    word-wrap: break-word;
+}
+
+/* 戦闘コマンド */
+.battle-commands {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+/* ポーズ画面 */
+.pause-menu {
+    text-align: center;
+    background: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.pause-menu h2 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2em;
+}
+
+/* ゲームオーバー画面 */
+.gameover-content {
+    text-align: center;
+    background: linear-gradient(135deg, #f44336 0%, #e91e63 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+}
+
+.gameover-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.gameover-content p {
+    font-size: 1.1em;
+    margin-bottom: 30px;
+}
+
+/* クリア画面 */
+.clear-content {
+    text-align: center;
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 15px;
+}
+
+.clear-content h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.clear-content p {
+    font-size: 1.1em;
+    margin-bottom: 20px;
+}
+
+#reward-info {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    font-size: 1em;
+}
+
+/* レスポンシブ */
+@media (max-width: 480px) {
+    .title-content h1 {
+        font-size: 2em;
+    }
+
+    .character-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .battle-container {
+        flex-direction: column;
+    }
+
+    .vs-line {
+        transform: rotate(90deg);
+        margin: 5px 0;
+    }
+    
+    #game-container {
+        height: auto;
+        min-height: 100vh;
+    }
+    
+    .screen {
+        height: auto;
+        min-height: 100vh;
+    }
+}
